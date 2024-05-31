@@ -90,5 +90,6 @@ task codeCoverageReport(type: JacocoReport) {
 sonarqube {
     properties {
         property "sonar.projectKey", "d3adspace_gradle-project-template"
+        property "sonar.java.binaries", "build/classes/java/main" // Adjust this path according to your project structure
     }
 }

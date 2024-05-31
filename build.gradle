@@ -11,57 +11,54 @@ buildScan {
   termsOfServiceAgree = 'yes'
 }
 
-allprojects {
-  group 'de.d3adspace.project'
-  version '1.0-SNAPSHOT'
+group = 'de.d3adspace.project'
+version = '1.0-SNAPSHOT'
 
-  sourceCompatibility = 1.13
-  targetCompatibility = 1.13
+sourceCompatibility = 1.13
+targetCompatibility = 1.13
 
+repositories {
+  google()
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+  testImplementation 'org.junit.platform:junit-platform-engine:1.5.2'
+  testImplementation 'org.mockito:mockito-junit-jupiter:3.1.0'
+  testImplementation 'org.mockito:mockito-core:4.6.1'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+publishing {
   repositories {
-    google()
-    mavenLocal()
-    mavenCentral()
-  }
-
-  dependencies {
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.5.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
-    testImplementation group: 'org.junit.platform', name: 'junit-platform-engine', version: '1.5.2'
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.1.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
-  }
-
-  test {
-    useJUnitPlatform()
-  }
-
-  publishing {
-    repositories {
-      maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/d3adspace/gradle-project-template")
-        credentials {
-          username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_USER")
-          password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_API_KEY")
-        }
-      }
-      maven {
-        def releasesRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-releases/'
-        def snapshotsRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-snapshots/'
-        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-        credentials {
-          username = System.getenv('NEXUS_USERNAME')
-          password = System.getenv('NEXUS_PASSWORD')
-        }
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/d3adspace/gradle-project-template")
+      credentials {
+        username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_USER")
+        password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_API_KEY")
       }
     }
-    publications {
-      gpr(MavenPublication) {
-        from(components.java)
+    maven {
+      def releasesRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-releases/'
+      def snapshotsRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-snapshots/'
+      url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+      credentials {
+        username = System.getenv('NEXUS_USERNAME')
+        password = System.getenv('NEXUS_PASSWORD')
       }
+    }
+  }
+  publications {
+    gpr(MavenPublication) {
+      from(components.java)
     }
   }
 }
@@ -69,9 +66,7 @@ allprojects {
 task codeCoverageReport(type: JacocoReport) {
   executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
-  subprojects.each {
-    sourceSets it.sourceSets.main
-  }
+  sourceSets sourceSets.main
 
   reports {
     xml.enabled = true

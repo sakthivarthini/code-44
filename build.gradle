@@ -1,14 +1,14 @@
 plugins {
-  id "org.sonarqube" version "3.4.0.2513"
-  id "java"
-  id "java-library"
-  id "jacoco"
-  id "maven-publish"
+    id "org.sonarqube" version "3.4.0.2513"
+    id "java"
+    id "java-library"
+    id "jacoco"
+    id "maven-publish"
 }
 
 buildScan {
-  termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-  termsOfServiceAgree = 'yes'
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
 
 group = 'de.d3adspace.project'
@@ -17,69 +17,78 @@ version = '1.0-SNAPSHOT'
 sourceCompatibility = 1.13
 targetCompatibility = 1.13
 
-repositories {
-  google()
-  mavenLocal()
-  mavenCentral()
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'jacoco'
+    apply plugin: 'maven-publish'
 
-dependencies {
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
-  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.2'
-  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
-  testImplementation 'org.junit.platform:junit-platform-engine:1.5.2'
-  testImplementation 'org.mockito:mockito-junit-jupiter:3.1.0'
-  testImplementation 'org.mockito:mockito-core:4.6.1'
-}
+    repositories {
+        google()
+        mavenLocal()
+        mavenCentral()
+    }
 
-test {
-  useJUnitPlatform()
-}
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+        testImplementation 'org.junit.platform:junit-platform-engine:1.5.2'
+        testImplementation 'org.mockito:mockito-junit-jupiter:3.1.0'
+        testImplementation 'org.mockito:mockito-core:4.6.1'
+    }
 
-publishing {
-  repositories {
-    maven {
-      name = "GitHubPackages"
-      url = uri("https://maven.pkg.github.com/d3adspace/gradle-project-template")
-      credentials {
-        username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_USER")
-        password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_API_KEY")
-      }
+    test {
+        useJUnitPlatform()
     }
-    maven {
-      def releasesRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-releases/'
-      def snapshotsRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-snapshots/'
-      url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-      credentials {
-        username = System.getenv('NEXUS_USERNAME')
-        password = System.getenv('NEXUS_PASSWORD')
-      }
+
+    publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/d3adspace/gradle-project-template")
+                credentials {
+                    username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_USER")
+                    password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_PACKAGE_REGISTRY_API_KEY")
+                }
+            }
+            maven {
+                def releasesRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-releases/'
+                def snapshotsRepoUrl = 'https://repository.klauke-enterprises.com/repository/maven-snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username = System.getenv('NEXUS_USERNAME')
+                    password = System.getenv('NEXUS_PASSWORD')
+                }
+            }
+        }
+        publications {
+            gpr(MavenPublication) {
+                from(components.java)
+            }
+        }
     }
-  }
-  publications {
-    gpr(MavenPublication) {
-      from(components.java)
-    }
-  }
 }
 
 task codeCoverageReport(type: JacocoReport) {
-  executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
-  sourceSets sourceSets.main
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
 
-  reports {
-    xml.enabled = true
-    html.enabled = true
-    csv.enabled = true
-    xml.destination = new File("${buildDir}/reports/jacoco/report.xml")
-    html.destination = new File("${buildDir}/reports/jacoco/report.html")
-    csv.destination = new File("${buildDir}/reports/jacoco/report.csv")
-  }
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        csv.enabled = true
+        xml.destination = new File("${buildDir}/reports/jacoco/report.xml")
+        html.destination = new File("${buildDir}/reports/jacoco/report.html")
+        csv.destination = new File("${buildDir}/reports/jacoco/report.csv")
+    }
 }
 
 sonarqube {
-  properties {
-    property "sonar.projectKey", "d3adspace_gradle-project-template"
-  }
+    properties {
+        property "sonar.projectKey", "d3adspace_gradle-project-template"
+    }
 }
